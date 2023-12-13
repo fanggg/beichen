@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>北辰QRCODE外掛</title>
+</head>
+<body>
+
+    <p id="locationStatus">Waiting for location...</p>
+    <img id="locationImage" style="display: none; max-width: 100%;" alt="Location Image">
+
+    <script>
+        function getLocation() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(showPosition, handleError);
+            } else {
+                alert("Geolocation is not supported by this browser.");
+            }
+
+        }
+
+        function showPosition(position) {
+            const latitude = position.coords.latitude.toFixed(11);
+            const longitude = position.coords.longitude.toFixed(11);
+
+            // Display the user's location
+            document.getElementById('locationStatus').innerText = `你的位置: ${latitude}, ${longitude}`;
+
+            if (isInLocation(latitude, longitude, 23.576101311487097, 120.3024608850752, 100)) { //北港鎮公所
+                showLocationInfo('你在北港鎮公所附近！');  // 顯示文字
+                showLocationImage('image/21北港鎮公所.jpg');
+            }
+            else if (isInLocation(latitude, longitude, 23.576661, 120.297759, 100)) { //北港家裡
+                showLocationInfo('你在北港家裡附近！');
+                showLocationImage('image/cat.jpg');
+            }
+            else if (isInLocation(latitude, longitude, 25.046410034133505, 121.54368536345434, 100)) { //台北家裡 測試
+                showLocationInfo('你在復興南路附近！');
+                showLocationImage('image/復興.jpg');
+            }
+            else if (isInLocation(latitude, longitude, 23.583870622322895, 120.29912679582856, 100)) { //北辰派出所
+                showLocationInfo('你在北辰派出所附近！');
+                showLocationImage('image/55華勝路與新德路口(肇事熱點).jpg');
+            }
+            else {
+                document.getElementById('locationImage').style.display = 'none';
+            }
+        }
+
+        function showLocationInfo(info) {
+            const locationStatus = document.getElementById('locationStatus');
+            locationStatus.innerText = info;
+        }
+        
+        function isInLocation(userLat, userLng, targetLat, targetLng, radius) {
+            const earthRadius = 6371000; // Earth radius in meters
+            const dLat = toRadians(targetLat - userLat);
+            const dLng = toRadians(targetLng - userLng);
+            const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                    Math.cos(toRadians(userLat)) * Math.cos(toRadians(targetLat)) *
+                    Math.sin(dLng / 2) * Math.sin(dLng / 2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+            const distance = earthRadius * c;
+
+            return distance <= radius;
+        }
+
+        function toRadians(degrees) {
+            return degrees * (Math.PI / 180);
+        }
+
+        function showLocationImage(imagePath) {
+            const locationImage = document.getElementById('locationImage');
+            locationImage.src = imagePath;
+            locationImage.style.display = 'block';
+        }
+
+        function handleError(error) {
+            switch (error.code) {
+                case error.PERMISSION_DENIED:
+                    alert("User denied the request for Geolocation.");
+                    break;
+                case error.POSITION_UNAVAILABLE:
+                    alert("Location information is unavailable.");
+                    break;
+                case error.TIMEOUT:
+                    alert("The request to get user location timed out.");
+                    break;
+                case error.UNKNOWN_ERROR:
+                    alert("An unknown error occurred.");
+                    break;
+            }
+        }
+
+        // Trigger location retrieval when the page loads
+        window.onload = getLocation;
+    </script>
+</body>
+</html>
